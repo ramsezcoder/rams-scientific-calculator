@@ -1,4 +1,6 @@
-export function parse(input) {
+// core/parser.js
+
+function parse(input) {
   if (!input) throw new Error("Input kosong");
 
   const tokens = input
@@ -8,3 +10,5 @@ export function parse(input) {
   if (!tokens) throw new Error("Input tidak valid");
   return tokens;
 }
+
+window.parse = parse;

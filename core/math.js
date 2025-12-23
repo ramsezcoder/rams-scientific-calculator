@@ -1,3 +1,5 @@
+// core/math.js
+
 const operators = {
   "+": { prec: 1, assoc: "L", fn: (a, b) => a + b },
   "-": { prec: 1, assoc: "L", fn: (a, b) => a - b },
@@ -11,14 +13,16 @@ const operators = {
     }
   },
   "^": { prec: 3, assoc: "R", fn: (a, b) => Math.pow(a, b) },
-  "%": { prec: 3, assoc: "R", fn: (a) => a / 100 }
+  "%": { prec: 3, assoc: "R", fn: (a) => a / 100, unary: true }
 };
 
 const functions = {
   sin: (x) => Math.sin(x * Math.PI / 180),
   cos: (x) => Math.cos(x * Math.PI / 180),
   tan: (x) => {
-    if (x % 90 === 0 && x % 180 !== 0) throw new Error("tan tidak terdefinisi");
+    if (x % 90 === 0 && x % 180 !== 0) {
+      throw new Error("tan tidak terdefinisi");
+    }
     return Math.tan(x * Math.PI / 180);
   },
   log: (x) => {
@@ -35,7 +39,7 @@ const functions = {
   }
 };
 
-export function execute(tokens) {
+function execute(tokens) {
   const output = [];
   const stack = [];
 
@@ -55,7 +59,7 @@ export function execute(tokens) {
         (
           operators[token].prec < operators[stack[stack.length - 1]].prec ||
           (operators[token].prec === operators[stack[stack.length - 1]].prec &&
-            operators[token].assoc === "L")
+           operators[token].assoc === "L")
         )
       ) {
         output.push(stack.pop());
@@ -75,7 +79,6 @@ export function execute(tokens) {
   });
 
   while (stack.length) output.push(stack.pop());
-
   return evaluatePostfix(output);
 }
 
@@ -86,14 +89,22 @@ function evaluatePostfix(queue) {
     if (typeof token === "number") {
       stack.push(token);
     } else if (operators[token]) {
-      const b = stack.pop();
-      const a = stack.pop();
-      stack.push(operators[token].fn(a, b));
+      if (operators[token].unary) {
+        const a = stack.pop();
+        stack.push(operators[token].fn(a));
+      } else {
+        const b = stack.pop();
+        const a = stack.pop();
+        stack.push(operators[token].fn(a, b));
+      }
     } else if (functions[token]) {
       const a = stack.pop();
       stack.push(functions[token](a));
     }
   });
 
-  return stack.pop();
+  if (stack.length !== 1) throw new Error("Ekspresi tidak valid");
+  return stack[0];
 }
+
+window.execute = execute;

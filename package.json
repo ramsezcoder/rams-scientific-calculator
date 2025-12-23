@@ -1,0 +1,28 @@
+{
+  "name": "rams-scientific-calculator",
+  "version": "1.0.0",
+  "description": "Portable scientific calculator desktop app",
+  "main": "electron.cjs",
+  "author": "Rams",
+  "license": "All Rights Reserved",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+  "appId": "com.rams.scientificcalculator",
+  "productName": "Rams Scientific Calculator",
+  "directories": {
+    "output": "dist"
+  },
+  "files": ["**/*"],
+  "win": {
+    "target": "portable",
+    "icon": "assets/icon.ico"
+  }
+}
+}

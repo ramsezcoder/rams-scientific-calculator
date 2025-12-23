@@ -1,27 +1,20 @@
-import { calculateExpression } from "./core/calculator.js";
-
 const display = document.getElementById("display");
-const history = document.getElementById("history");
+const calc = document.getElementById("calc");
+const historyEl = document.getElementById("history");
+
+let history = [];
 
 /* =========================
-   UTILITIES
+   DISPLAY HELPERS
 ========================= */
-const OPERATORS = ["+", "-", "*", "/", "^", "%"];
-
 function resetIfZero() {
-  if (display.value === "0") display.value = "";
+  if (display.value === "0") {
+    display.value = "";
+  }
 }
 
-function lastChar() {
-  return display.value.slice(-1);
-}
-
-function isOperator(char) {
-  return OPERATORS.includes(char);
-}
-
-function showError(message = "Error") {
-  display.value = message;
+function showError() {
+  display.value = "Error";
   setTimeout(() => {
     display.value = "0";
   }, 1200);
@@ -32,16 +25,11 @@ function showError(message = "Error") {
 ========================= */
 window.append = (value) => {
   resetIfZero();
-
-  // Cegah operator ganda
-  if (isOperator(value) && isOperator(lastChar())) return;
-
   display.value += value;
 };
 
 window.clearDisplay = () => {
   display.value = "0";
-  if (history) history.textContent = "";
 };
 
 window.deleteLast = () => {
@@ -54,75 +42,31 @@ window.deleteLast = () => {
 
 window.calculate = () => {
   try {
-    const expression = display.value;
-    const result = calculateExpression(expression);
+    const expr = display.value;
+    const result = window.calculateExpression(expr);
 
-    if (history) {
-      history.textContent = `${expression} = ${result}`;
-    }
-
+    // tampilkan hasil
     display.value = result.toString();
+
+    // simpan history
+    history.unshift(`${expr} = ${result}`);
+    history = history.slice(0, 5); // max 5
+
+    historyEl.innerHTML = history.join("<br>");
   } catch (e) {
-    showError(e.message);
+    showError();
   }
 };
 
 /* =========================
-   THEME TOGGLE
+   THEME TOGGLE (FIXED)
 ========================= */
 window.toggleTheme = () => {
-  const calc = document.getElementById("calc");
-  if (!calc) return;
-
-  calc.classList.toggle("light");
-  calc.classList.toggle("dark");
+  if (calc.classList.contains("dark")) {
+    calc.classList.remove("dark");
+    calc.classList.add("light");
+  } else {
+    calc.classList.remove("light");
+    calc.classList.add("dark");
+  }
 };
-
-/* =========================
-   KEYBOARD SUPPORT
-========================= */
-document.addEventListener("keydown", (e) => {
-  const key = e.key;
-
-  // Angka
-  if (!isNaN(key)) {
-    append(key);
-    return;
-  }
-
-  // Operator
-  if (["+", "-", "*", "/", "^", "%"].includes(key)) {
-    append(key);
-    return;
-  }
-
-  // Titik desimal
-  if (key === ".") {
-    append(".");
-    return;
-  }
-
-  // Kurung
-  if (key === "(" || key === ")") {
-    append(key);
-    return;
-  }
-
-  // Enter / =
-  if (key === "Enter" || key === "=") {
-    e.preventDefault();
-    calculate();
-    return;
-  }
-
-  // Backspace → DEL
-  if (key === "Backspace") {
-    deleteLast();
-    return;
-  }
-
-  // Escape → AC
-  if (key === "Escape") {
-    clearDisplay();
-  }
-});
